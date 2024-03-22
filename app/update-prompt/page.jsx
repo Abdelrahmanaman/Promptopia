@@ -1,20 +1,19 @@
-"use client"
+"use"
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
+import dynamic from "next/dynamic";
 
-import Form from "@components/Form";
+// Dynamically import Form with SSR disabled
+const Form = dynamic(() => import("@components/Form"), { ssr: false });
 
 const UpdatePrompt = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const promptId = searchParams.get("id");
-
   const [post, setPost] = useState({ prompt: "", tag: "" });
   const [submitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const getPromptDetails = async () => {
-      const response = await fetch(`/api/prompt/${promptId}`);
+      const response = await fetch(`/api/prompt/${router.query.id}`);
       const data = await response.json();
 
       setPost({
@@ -23,17 +22,17 @@ const UpdatePrompt = () => {
       });
     };
 
-    if (promptId) getPromptDetails();
-  }, [promptId]);
+    if (router.query.id) getPromptDetails();
+  }, [router.query.id]);
 
   const updatePrompt = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!promptId) return alert("Missing PromptId!");
+    if (!router.query.id) return alert("Missing PromptId!");
 
     try {
-      const response = await fetch(`/api/prompt/${promptId}`, {
+      const response = await fetch(`/api/prompt/${router.query.id}`, {
         method: "PATCH",
         body: JSON.stringify({
           prompt: post.prompt,
@@ -54,11 +53,4 @@ const UpdatePrompt = () => {
   return <Form type="Edit" post={post} setPost={setPost} submitting={submitting} handleSubmit={updatePrompt} />;
 };
 
-// Wrap the component in a Suspense boundary
-const WrappedUpdatePrompt = () => (
-  <Suspense fallback={<div>Loading...</div>}>
-    <UpdatePrompt />
-  </Suspense>
-);
-
-export default WrappedUpdatePrompt;
+export default UpdatePrompt;
