@@ -1,28 +1,33 @@
-"use"
+// Add this directive at the top of the file to enable SSR
+// disable for this component ONLY
+
+"use client";
+
 import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 
-// Dynamically import Form with SSR disabled
 const Form = dynamic(() => import("@components/Form"), { ssr: false });
 
-const UpdatePrompt = () => {
+export default function UpdatePrompt() {
   const router = useRouter();
   const [post, setPost] = useState({ prompt: "", tag: "" });
   const [submitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const getPromptDetails = async () => {
-      const response = await fetch(`/api/prompt/${router.query.id}`);
-      const data = await response.json();
+    async function getPromptDetails() {
+      if (router.query.id) {
+        const response = await fetch(`/api/prompt/${router.query.id}`);
+        const data = await response.json();
 
-      setPost({
-        prompt: data.prompt,
-        tag: data.tag,
-      });
-    };
+        setPost({
+          prompt: data.prompt,
+          tag: data.tag,
+        });
+      }
+    }
 
-    if (router.query.id) getPromptDetails();
+    getPromptDetails();
   }, [router.query.id]);
 
   const updatePrompt = async (e) => {
@@ -51,6 +56,4 @@ const UpdatePrompt = () => {
   };
 
   return <Form type="Edit" post={post} setPost={setPost} submitting={submitting} handleSubmit={updatePrompt} />;
-};
-
-export default UpdatePrompt;
+}
