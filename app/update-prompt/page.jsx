@@ -1,5 +1,3 @@
-// Add this directive at the top of the file to enable SSR
-// disable for this component ONLY
 
 "use client";
 
